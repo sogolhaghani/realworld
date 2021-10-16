@@ -19,6 +19,10 @@ export default function reducer(state = initState, action) {
             return initState;
         case types.INPUT_CHANGED:
             return utils.updateProperty(state, action, 'user');
+        case types.LOAD_USER_SUCCESS:
+            newState.user = action.user.user;
+            newState.token = action.user.token;
+            return newState;
         case types.LOGIN_SUCCESS:
             newState.token = action.user.token;
             newState.isAuthenticated = true;

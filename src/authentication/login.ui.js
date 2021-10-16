@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useCookie } from "react-use";
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
@@ -25,7 +26,7 @@ const messeges = {
 const LoginUI = (props) => {
 
     const dispatch = useDispatch();
-
+    const [value, updateCookie] = useCookie("my-cookie-realwold");
     const status = useSelector(state => state.authentication.status);
     const token = useSelector(state => state.authentication.token);
     const username = useSelector(state => state.authentication.user.username);
@@ -33,11 +34,12 @@ const LoginUI = (props) => {
     const validations = useSelector(state => state.authentication.validations) || [];
 
     useEffect(() => {
-        if (token) {
+        if (token || value) {
             props.history.push('/menu')
+            updateCookie(token);
         } else
             dispatch(clear())
-    }, [token, dispatch, props.history]);
+    }, [token, dispatch, props.history, updateCookie, value]);
 
     return (
         <>

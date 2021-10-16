@@ -14,10 +14,10 @@ export const CLEAR_VALIDATION = 'ARTICLE_CLEAR_VALIDATION';
 export const INPUT_CHANGED = 'ARTICLE_INPUT_CHANGED';
 export const REQUIRED_VALIDATION = 'ARTICLE_REQUIRED_VALIDATION';
 
-export function loadAllArticles() {
+export function loadAllArticles(token) {
     return (dispatch, getState) => {
         let pageItem = getState().article.table.pageItem;
-        const token = getState().authentication.token;
+
         const address = ARTICLE_URL + "?offset=" + (pageItem.page - 1) + "&limit=" + pageItem.rowsPerPage;
         dispatch(updateStatus(STATUS.loading))
         fetch(address, requestGetOptions(token))
@@ -29,10 +29,9 @@ export function loadAllArticles() {
 
 
 
-export const loadArticle = (id) => {
+export const loadArticle = (id, token) => {
     return (dispatch, getState) => {
         const address = ARTICLE_URL + "/" + id;
-        const token = getState().authentication.token;
         dispatch(updateStatus(STATUS.loading))
         fetch(address, requestGetOptions(token))
             .then(handleResponse)
@@ -41,37 +40,33 @@ export const loadArticle = (id) => {
     }
 };
 
-export const deleteArticle = (id) => {
+export const deleteArticle = (id, token) => {
     return (dispatch, getState) => {
         const address = ARTICLE_URL + "/" + id;
-        const token = getState().authentication.token;
         dispatch(updateStatus(STATUS.loading));
         fetch(address, requestDeleteOptions(token))
             .then(handleResponse)
             .then(() => {
                 dispatch(pageChange(1))
-                dispatch(loadAllArticles())
-                dispatch(updateStatus(STATUS.loaded))
+                dispatch(updateStatus(STATUS.deleted))
             })
             .catch((error) => {dispatch(addValidation(error));dispatch(updateStatus(STATUS.validate))});
     }
 };
 
 
-export const onSubmitArticle = () => {
+export const onSubmitArticle = (token) => {
     return (dispatch, getState) => {
         dispatch(updateStatus(STATUS.loading));
         if (validateArticle()) {
             const article = getState().article.entity;
             const address = ARTICLE_URL + (article.slug ? ("/" + article.slug) : "");
             const method = article.slug ? 'PUT' : 'POST';
-            const apiAricle = { article: article }
-            const token = getState().authentication.token;
-            
+            const apiAricle = { article: article }      
             fetch(address, requestOptions(method, apiAricle, token))
                 .then(handleResponse)
                 .then(response => {
-                    dispatch(updateStatus(STATUS.saved))
+                    dispatch(updateStatus(article.slug ? STATUS.updated:STATUS.saved))
                 })
                 .catch((error) => {
                     dispatch(addValidation(error)); 

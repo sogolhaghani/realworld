@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-
+import { useCookie } from "react-use";
 
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
 import { useParams } from "react-router-dom";
 import { loadArticle, clearUI, inputChangeHandler, requiredValidation, onSubmitArticle, clearValidation, updateStatus } from './article.action';
-import { loadAllTags } from '../tag/tag.action';
+import { loadAllTags, addTag } from '../tag/tag.action';
 import InputText from '../component/InputText';
 import Checkbox from '../component/Checkbox';
 import Alert from '../component/Alert';
@@ -26,6 +26,7 @@ const messeges = {
 
 
 const EditPage = (props) => {
+    const [value] = useCookie("my-cookie-realwold");
     const { slug } = useParams();
     const dispatch = useDispatch();
     const title = useSelector(state => state.article.entity.title);
@@ -40,16 +41,24 @@ const EditPage = (props) => {
     const [tag, setTag] = useState('');
     useEffect(() => {
         dispatch(clearUI())
-        dispatch(loadAllTags())
+        dispatch(loadAllTags(value))
         dispatch(updateStatus(STATUS.init))
 
         if (slug)
-            dispatch(loadArticle(slug))
-    }, [slug, dispatch])
+            dispatch(loadArticle(slug, value))
+    }, [slug, dispatch, value])
 
-    if (status === STATUS.saved){
+    if (status === STATUS.saved) {
         props.history.push('/article/list')
         return null
+    }
+
+    const addNewTag = () => {
+        if (tag && tag.length > 0) {
+            dispatch(addTag(tag))
+            dispatch(inputChangeHandler([...allSelectedTags, tag], 'tagList'))
+            setTag("")
+        }
     }
 
     return (
@@ -83,21 +92,22 @@ const EditPage = (props) => {
                     <InputText label={messeges.tags}
                         value={tag || ''}
                         changeHandler={val => setTag(val)}
+                        blurHandler={() => addNewTag()}
                     />
                     <div className="form-control" style={{ height: '255px', overflow: 'auto' }}>
                         {allTags.map((t, key) =>
-                            <Checkbox key={key} value={allSelectedTags.filter(x => x === t).length > 0} 
-                            label={t} 
-                            changeHandler={e => {
-                                e ? dispatch(inputChangeHandler([...allSelectedTags, t], 'tagList')) : dispatch(inputChangeHandler(allSelectedTags.filter(x => x !== t), 'tagList'))
-                            }} />
+                            <Checkbox key={key} value={allSelectedTags.filter(x => x === t).length > 0}
+                                label={t}
+                                changeHandler={e => {
+                                    e ? dispatch(inputChangeHandler([...allSelectedTags, t], 'tagList')) : dispatch(inputChangeHandler(allSelectedTags.filter(x => x !== t), 'tagList'))
+                                }} />
                         )}
                     </div>
 
                 </div>
             </div>
             <Button type="submit" primary
-                onClick={e => { e.preventDefault(); dispatch(onSubmitArticle()) }}
+                onClick={e => { e.preventDefault(); dispatch(onSubmitArticle(value)) }}
                 disabled={status === STATUS.loading} label={messeges.submit} />
 
 

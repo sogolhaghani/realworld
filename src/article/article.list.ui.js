@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useCookie } from "react-use";
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
@@ -25,11 +26,15 @@ const messeges = {
     next: ">",
     deleteModalDescription: 'Are you sure to delete Article?',
     deleteTitle: 'Delete Article',
-    success: 'Article updated successfuly',
+    success_saved: 'Article created successfuly',
+    success_updated: 'Article updated successfuly',
+    success_deleted: 'Article deleted successfuly',
+    failed_deleted: 'Article deleted Forbiden',
     success_bold: 'Well done! ',
 }
 
 const DropDown = (props) => {
+
     const ref = useRef()
     const [open, setOpen] = useState(false)
 
@@ -64,14 +69,14 @@ const DropDown = (props) => {
 
 
 const Pager = (props) => {
-
+    const [value] = useCookie("my-cookie-realwold");
     const dispatch = useDispatch();
 
     const goToPage = (page) => {
         if (page === props.current)
             return
         dispatch(pageChange(page))
-        dispatch(loadAllArticles())
+        dispatch(loadAllArticles(value))
     }
 
 
@@ -100,7 +105,7 @@ const Pager = (props) => {
         <nav aria-label="...">
             <ul className="pagination">
                 <li className={"page-item" + (props.current === 1 ? " disabled" : "")}>
-                    <span className="page-link"  tabIndex="-1" onClick={e => { e.preventDefault(); goToPage(props.current - 1) }} >{messeges.prev}</span>
+                    <span className="page-link" tabIndex="-1" onClick={e => { e.preventDefault(); goToPage(props.current - 1) }} >{messeges.prev}</span>
                 </li>
 
                 {Array.from({ length: end - start + 1 }, (_, i) => start + i).map(function (x, i) {
@@ -113,7 +118,7 @@ const Pager = (props) => {
 
 
                 <li className={"page-item" + (props.lastPage ? " disabled" : "")}>
-                    <span className="page-link"  onClick={e => { e.preventDefault(); goToPage(props.current + 1) }} >{messeges.next}</span>
+                    <span className="page-link" onClick={e => { e.preventDefault(); goToPage(props.current + 1) }} >{messeges.next}</span>
                 </li>
             </ul>
         </nav>
@@ -122,41 +127,43 @@ const Pager = (props) => {
 
 
 const ListPage = () => {
+    const [value] = useCookie("my-cookie-realwold");
     const dispatch = useDispatch();
     const list = useSelector(state => state.article.table.list || [])
     const status = useSelector(state => state.article.status)
     const pageItem = useSelector(state => state.article.table.pageItem || [])
-
-
+    const validations = useSelector(state => state.article.validations) || [];
 
     const [openModal, setOpenModal] = useState(false);
-    const [showAlert, setShowAlert] = useState(false);
+    const [showAlert, setShowAlert] = useState(null);
     const [deletedItemSlug, setDeletedItemSlug] = useState(null)
 
     useEffect(() => {
-        if (status === STATUS.saved) {
-            setShowAlert(true)
+        if (status === STATUS.saved || status === STATUS.updated || status === STATUS.deleted || status === STATUS.validate) {
+            setShowAlert(status)
         }
         if (status !== STATUS.list && status !== STATUS.loading)
-            dispatch(loadAllArticles())
-    }, [status, showAlert, dispatch]);
+            dispatch(loadAllArticles(value))
+    }, [status, showAlert, dispatch, value]);
 
     const closeModalHandler = () => {
         setOpenModal(false)
     }
 
     const deleteArticleConfirm = (id) => {
-        dispatch(deleteArticle(id));
+        dispatch(deleteArticle(id, value));
         setOpenModal(false)
     }
 
     return (
         <>
             <h1>{messeges.title}</h1>
-            <Alert show={showAlert} success dismissible
-                emphasis={messeges.success_bold}
-                onClose={() => setShowAlert(false)}
-                value={messeges.success} />
+            <Alert show={showAlert !== null}
+                success={showAlert && (showAlert === STATUS.saved || showAlert === STATUS.deleted || showAlert === STATUS.updated)}
+                danger={showAlert && showAlert === STATUS.validate} dismissible
+                emphasis={showAlert && showAlert !== STATUS.deleted && showAlert !== STATUS.validate ? messeges.success_bold : ""}
+                onClose={() => setShowAlert(null)}
+                value={showAlert === STATUS.validate ? validations.filter(x => x.field == null)[0].messege : messeges['success_' + showAlert]} />
             <table className="table mt-3">
                 <thead className="thead-light">
                     <tr>

@@ -2,6 +2,7 @@ import { handleResponse, requestGetOptions, BASE_DOMAIN } from '../utility/actio
 
 const TAG_URL = BASE_DOMAIN+ "tags";
 export const LOAD_TABLE_SUCCESS = "TAG_LOAD_TABLE_SUCCESS";
+export const NEW_TAG = "TAG_NEW_TAG";
 
 
 export const loadAllTags = () => {
@@ -18,5 +19,11 @@ export const loadAllTags = () => {
 const allTagsSuccess = (data) => {
     return {
         type: LOAD_TABLE_SUCCESS, data
+    }
+}
+
+export const  addTag = (newTag) =>{
+    return{
+        type : NEW_TAG, newTag
     }
 }

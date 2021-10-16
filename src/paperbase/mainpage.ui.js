@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
+import { useCookie } from "react-use";
 import { Link, useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import ArticleList from '../article/article.list.ui';
 import ArticleEdit from '../article/article.edit.ui';
-import {logoutUser} from '../authentication/authentication.actions'
+import {logoutUser, loadUser} from '../authentication/authentication.actions';
 
 const messages = {
     brand: "Challenge",
@@ -17,18 +18,29 @@ const messages = {
 }
 
 const ConfigurationUI = () => {
+    const [value, updateCookie,deleteCookie] = useCookie("my-cookie-realwold");
     const username = useSelector(state => state.authentication.user.username)
-    const token = useSelector(state => state.authentication.token)
     const history = useHistory();
     const dispatch = useDispatch();
     useEffect(() => {
-        if (!token)
+        if (!value )
             history.push('/login')
-    }, [history, token])
+
+        if(!username && value)
+            dispatch(loadUser(value))
+
+    }, [history, value, username, dispatch])
 
     const logout = () =>{
         dispatch(logoutUser());
+        deleteCookie();
     }
+
+    history.listen(location => {
+        if (history.action === 'PUSH' && location === "/login" ) {
+            history.go(1)
+        }
+      })
 
     return (
         <BrowserRouter>
@@ -38,7 +50,9 @@ const ConfigurationUI = () => {
                 <div className="collapse navbar-collapse" id="navbarNav">
                     <ul className="navbar-nav">
                         <li className="nav-item active">
+                            {username ? 
                             <span className="nav-link" >{messages.welcome + ' ' + username} </span>
+                            :<></>}
                         </li>
                     </ul>
 

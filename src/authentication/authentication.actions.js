@@ -1,9 +1,10 @@
-import { handleResponse, BASE_DOMAIN, requestOptions } from '../utility/actions.utils';
+import { handleResponse, BASE_DOMAIN, requestOptions, requestGetOptions } from '../utility/actions.utils';
 import { STATUS } from '../utility/uis.utils';
 
 export const INPUT_CHANGED = 'LOGIN_INPUT_CHANGED';
 export const REQUIRED_VALIDATION = 'LOGIN_REQUIRED_VALIDATION';
 export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
+export const LOAD_USER_SUCCESS = 'LOGIN_USER_SUCCESS'
 export const LOGIN_FAILED = 'LOGIN_FAILED';
 export const CLEAR_VALIDATION = 'LOGIN_CLEAR_VALIDATION';
 export const CLEAR_UI = 'LOGIN_CLEAR_UI';
@@ -12,6 +13,7 @@ export const STATUS_UPDATE = 'LOGIN_STATUS_UPDATE';
 
 const LOGIN_URL = BASE_DOMAIN + "users/login";
 const REGISTER_URL = BASE_DOMAIN + "users";
+const PROFILE_URL = BASE_DOMAIN + "user";
 
 export const registerHandler = () => {
     return (dispatch, getState) => {
@@ -27,6 +29,16 @@ export const loginHandler = () => {
         if (validateUserPass()) {
             const body = { user: { email: getState().authentication.user.username, password: getState().authentication.user.password } };
             return requestHandler(LOGIN_URL, body, dispatch);
+        }
+    }
+};
+
+export const loadUser = (token) => {
+    return (dispatch, getState) => {
+        if (validateUserPass()) {
+            fetch(PROFILE_URL, requestGetOptions(token))
+                .then(handleResponse)
+                .then(user=>dispatch(loadUserSuccess(user)))         
         }
     }
 };
@@ -47,6 +59,12 @@ const loginSuccess = (user) => {
         type: LOGIN_SUCCESS, user: user.user
     }
 };
+
+const loadUserSuccess = (user) => {
+    return{
+        type :LOAD_USER_SUCCESS, user 
+    }
+}
 
 const loginFailed = (errors) => {
     return {

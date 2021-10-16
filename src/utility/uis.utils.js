@@ -17,6 +17,8 @@ export const STATUS = {
     loading:'loading',
     loaded:'loaded',
     saved:'saved',
+    updated:'updated',
+    deleted:'deleted',
     list: 'list',
     validate:'validate'
 }

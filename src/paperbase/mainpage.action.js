@@ -1,12 +1,13 @@
-// const PROFILE_URL = "https://conduit.productionready.io/api/users/login";
+// import { handleResponse, requestGetOptions, BASE_DOMAIN } from '../utility/actions.utils';
 
-// export const loadProfile = () =>{
+// const PROFILE_URL = BASE_DOMAIN + "user";
+
+// export const loadUser = (token) =>{
 //     return (dispatch, getState) => {
-//         for (const id in ids) {
-//             fetch('http://localhost:8080/api/ostans/'+ids[id], requestDeleteOptions())
+//             fetch(PROFILE_URL, requestGetOptions(token))
 //                 .then(handleResponse)
 //                 .then(id == ids.length -1 ? dispatch(deleteEntitiesSuccess()) : "")
 //                 .catch((error) =>  dispatch(addValidation(error)));
 //         }
-//     }
+    
 // }

@@ -34,7 +34,8 @@ export default function reducer(state = initState, action) {
         case types.INPUT_CHANGED:
             return utils.updateProperty(state, action);
         case types.CLEAR_VALIDATION:
-            return initState.validations;
+            newState.validations = []
+            return newState;
         case types.SERVER_ERQUEST_FAILED: 
             return utils.updateServerValidation(state, action);
         case types.REQUIRED_VALIDATION:
